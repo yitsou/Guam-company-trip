@@ -1,1 +1,476 @@
-# Guam-company-trip
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>2027 Guam Company Trip</title>
+  
+  <!-- 引入 Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Noto+Sans+TC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'Noto Sans TC', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  
+  <style>
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    body { background-color: #EEF2F6; font-family: 'Plus Jakarta Sans', 'Noto Sans TC', sans-serif; margin: 0; padding: 0; }
+  </style>
+
+  <!-- React 18 & Babel CDN -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body class="min-h-screen bg-[#EEF2F6] text-[#243B53]">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+    const STORAGE_KEY = 'Guam_Company_Trip_2027_Standalone';
+
+    // 關島 5 天 4 夜 行程資料（僅保留住宿與航班）
+    const defaultDays = [
+      {
+        dayIndex: 0,
+        dateStr: '2/13',
+        dayOfWeek: '六',
+        dayLabel: '2/13 (六)',
+        items: [
+          {
+            id: 'd1-flight-1',
+            type: 'flight',
+            time: '航班時間待定',
+            title: '去程航班（桃園 TPE ➔ 關島 GUM）',
+            note: '搭乘直飛/指定航班前往關島安東尼奧·汪帕特國際機場 (GUM)。\n請提前 2.5～3 小時於桃園國際機場集合辦理報到、托運行李與出境手續。',
+            done: false,
+          },
+          {
+            id: 'd1-hotel-checkin',
+            type: 'hotel',
+            time: '15:00',
+            title: '飯店 Check In：THE TSUBAKI HOTEL',
+            note: '抵達關島頂級五星海景渡假酒店辦理入住手續，放鬆身心享受杜夢灣壯麗海景與無邊際泳池。',
+            mapLink: 'https://share.google/VmCvH93JirzAnI0V1',
+            done: false,
+          },
+        ],
+      },
+      {
+        dayIndex: 1,
+        dateStr: '2/14',
+        dayOfWeek: '日',
+        dayLabel: '2/14 (日)',
+        items: [
+          {
+            id: 'd2-hotel-stay',
+            type: 'hotel',
+            time: '全日住宿',
+            title: '住宿：THE TSUBAKI HOTEL',
+            note: '享受飯店設施、無邊際海景泳池、海景露台與杜夢灣迷人沙灘放鬆時光。',
+            mapLink: 'https://share.google/VmCvH93JirzAnI0V1',
+            done: false,
+          },
+        ],
+      },
+      {
+        dayIndex: 2,
+        dateStr: '2/15',
+        dayOfWeek: '一',
+        dayLabel: '2/15 (一)',
+        items: [
+          {
+            id: 'd3-hotel-stay',
+            type: 'hotel',
+            time: '全日住宿',
+            title: '住宿：THE TSUBAKI HOTEL',
+            note: '全日渡假住宿，享受飯店悠閒時光、品味美食與杜夢灣迷人日落景致。',
+            mapLink: 'https://share.google/VmCvH93JirzAnI0V1',
+            done: false,
+          },
+        ],
+      },
+      {
+        dayIndex: 3,
+        dateStr: '2/16',
+        dayOfWeek: '二',
+        dayLabel: '2/16 (二)',
+        items: [
+          {
+            id: 'd4-hotel-stay',
+            type: 'hotel',
+            time: '全日住宿',
+            title: '住宿：THE TSUBAKI HOTEL',
+            note: '旅程最後一晚住宿，享受飯店優質設施、浪漫晚霞與渡假氛圍。',
+            mapLink: 'https://share.google/VmCvH93JirzAnI0V1',
+            done: false,
+          },
+        ],
+      },
+      {
+        dayIndex: 4,
+        dateStr: '2/17',
+        dayOfWeek: '三',
+        dayLabel: '2/17 (三)',
+        items: [
+          {
+            id: 'd5-hotel-checkout',
+            type: 'hotel',
+            time: '11:00 前',
+            title: '飯店 Check Out：THE TSUBAKI HOTEL',
+            note: '辦理退房與行李寄放，確認隨身行李物品，準備專車前往關島機場 (GUM)。',
+            mapLink: 'https://share.google/VmCvH93JirzAnI0V1',
+            done: false,
+          },
+          {
+            id: 'd5-flight-back',
+            type: 'flight',
+            time: '航班時間待定',
+            title: '返程航班（關島 GUM ➔ 桃園 TPE）',
+            note: '抵達關島安東尼奧·汪帕特國際機場 (GUM)，辦理登機報到、托運行李與安檢出境。\n平安賦歸台灣，結束充實難忘的關島員工旅遊！',
+            done: false,
+          },
+        ],
+      },
+    ];
+
+    // 美金/台幣 匯率換算器
+    function CurrencyConverter({ initialRate = 32.2 }) {
+      const [usdAmount, setUsdAmount] = useState('');
+      const [rate, setRate] = useState(initialRate);
+      const [lastUpdated, setLastUpdated] = useState('即時匯率');
+
+      useEffect(() => {
+        async function fetchRate() {
+          try {
+            const res = await fetch('https://api.frankfurter.dev/v1/latest?base=USD&symbols=TWD');
+            if (res.ok) {
+              const data = await res.json();
+              if (data?.rates?.TWD) {
+                setRate(Number(data.rates.TWD.toFixed(2)));
+                setLastUpdated(`1 USD ≈ ${data.rates.TWD.toFixed(2)} NTD`);
+              }
+            }
+          } catch (e) {}
+        }
+        fetchRate();
+      }, []);
+
+      const usd = parseFloat(usdAmount) || 0;
+      const twd = Math.round(usd * rate);
+
+      return (
+        <div className="bg-white rounded-2xl p-4 border border-[#DFE7ED] flex items-center justify-between shadow-[0_2px_10px_rgba(36,59,83,0.03)]">
+          <div className="flex flex-col">
+            <div className="flex items-center gap-1.5 mb-1">
+              <span className="text-[10px] text-[#627D98] font-bold uppercase tracking-wider">Exchange (USD)</span>
+              <span className="text-[9px] text-[#829AB1] bg-[#F0F4F8] px-1.5 py-0.5 rounded">
+                {lastUpdated}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-bold text-[#243B53]">$</span>
+              <input
+                type="number"
+                value={usdAmount}
+                onChange={(e) => setUsdAmount(e.target.value)}
+                placeholder="美金"
+                className="w-24 focus:outline-none text-lg font-medium border-b border-[#CBD8E3] bg-transparent text-[#243B53] placeholder:text-[#9FB3C8]"
+              />
+            </div>
+          </div>
+          <div className="text-[#9FB3C8] px-2 flex items-center">
+            <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+          </div>
+          <div className="text-right">
+            <span className="text-[10px] text-[#627D98] font-bold uppercase tracking-wider mb-1 block">NT$ (TWD)</span>
+            <p className="text-lg font-black text-[#486581]">$ {twd.toLocaleString()}</p>
+          </div>
+        </div>
+      );
+    }
+
+    // 橫向日期膠囊分頁
+    function DayNavigation({ days, activeDayIdx, onSelectDay }) {
+      const containerRef = useRef(null);
+
+      useEffect(() => {
+        const container = containerRef.current;
+        if (!container) return;
+        const activeTab = container.querySelector(`[data-day-idx="${activeDayIdx}"]`);
+        if (activeTab) {
+          const rect = activeTab.getBoundingClientRect();
+          const containerRect = container.getBoundingClientRect();
+          const offsetLeft = activeTab.offsetLeft;
+          const targetScroll = offsetLeft - containerRect.width / 2 + rect.width / 2;
+          container.scrollTo({
+            left: targetScroll,
+            behavior: 'smooth',
+          });
+        }
+      }, [activeDayIdx]);
+
+      return (
+        <div className="w-full">
+          <div className="flex justify-end px-1 mb-2">
+            <span className="text-[10px] text-[#486581] font-bold uppercase tracking-widest bg-[#DFE9F1] px-3.5 py-1 rounded-lg">
+              DAY {activeDayIdx + 1} / {days.length}
+            </span>
+          </div>
+
+          <div
+            ref={containerRef}
+            className="flex items-center gap-2.5 overflow-x-auto no-scrollbar scroll-smooth pb-2 pt-1 px-1"
+          >
+            {days.map((day, idx) => {
+              const isActive = idx === activeDayIdx;
+              return (
+                <button
+                  key={day.dayIndex}
+                  data-day-idx={idx}
+                  type="button"
+                  onClick={() => onSelectDay(idx)}
+                  className={`flex-shrink-0 px-4 py-2 rounded-full text-xs sm:text-sm font-bold transition-all duration-300 cursor-pointer ${
+                    isActive
+                      ? 'bg-[#486581] text-white border border-[#486581] shadow-sm'
+                      : 'bg-white text-[#334E68] border border-[#D5E1EA] hover:bg-[#F2F6F9] hover:border-[#9FB3C8]'
+                  }`}
+                >
+                  <span>{day.dayLabel}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      );
+    }
+
+    // 行程卡片（莫蘭迪藍色系）
+    function ItineraryCard({ item, onToggleDone }) {
+      const isFlight = item.type === 'flight';
+      const isHotel = item.type === 'hotel';
+
+      const cardBaseClass = isFlight
+        ? 'bg-[#EBF1F6] border-[1.5px] border-dashed border-[#BCCEDC] rounded-[20px] p-[22px] transition-all duration-300'
+        : 'bg-white border border-[#DFE7ED] rounded-[20px] p-[22px] shadow-[0_2px_10px_rgba(36,59,83,0.03)] transition-all duration-300';
+
+      const tagLabel = isFlight ? 'FLIGHT' : 'HOTEL RESORT';
+      const tagStyle = isFlight ? 'bg-[#486581] text-white' : 'bg-[#5B7B94] text-white';
+
+      return (
+        <div className={`${cardBaseClass} flex items-start gap-3.5 mb-4`}>
+          <button
+            type="button"
+            onClick={() => onToggleDone(item.id)}
+            className={`w-[22px] h-[22px] rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all cursor-pointer mt-0.5 ${
+              item.done ? 'bg-[#486581] border-[#486581] text-white' : 'border-[#BCCEDC] hover:border-[#486581] bg-transparent'
+            }`}
+          >
+            {item.done && (
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="white">
+                <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z" />
+              </svg>
+            )}
+          </button>
+
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-2">
+              <span className={`inline-block px-2.5 py-0.5 text-[10px] font-bold tracking-wider rounded-lg uppercase ${tagStyle}`}>
+                {tagLabel}
+              </span>
+              {item.time && (
+                <span className="text-xs font-semibold text-[#627D98] tracking-wide">
+                  {item.time}
+                </span>
+              )}
+            </div>
+
+            <div className="flex items-start">
+              {isFlight && (
+                <svg className="w-5 h-5 text-[#486581] flex-shrink-0 mr-2.5 mt-0.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.3c.4-.2.6-.6.5-1.1z"/>
+                </svg>
+              )}
+              {isHotel && (
+                <svg className="w-5 h-5 text-[#486581] flex-shrink-0 mr-2.5 mt-0.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/>
+                  <path d="M6 12H4a2 2 0 0 0-2 2v8h4"/>
+                  <path d="M18 9h2a2 2 0 0 1 2 2v11h-4"/>
+                </svg>
+              )}
+              <h3 className={`font-bold text-lg text-[#243B53] leading-tight ${item.done ? 'text-[#9FB3C8] line-through opacity-70' : ''}`}>
+                {item.title}
+              </h3>
+            </div>
+
+            {item.note && (
+              <p className={`text-sm text-[#486581] mt-3 leading-relaxed whitespace-pre-line font-normal ${item.done ? 'text-[#9FB3C8] line-through opacity-70' : ''}`}>
+                {item.note}
+              </p>
+            )}
+
+            {item.mapLink && (
+              <div className="mt-4 pt-1">
+                <a
+                  href={item.mapLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center text-[#486581] text-[13px] font-bold tracking-wide hover:underline"
+                >
+                  <svg className="mr-1.5 flex-shrink-0" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z" />
+                  </svg>
+                  <span>Google Maps</span>
+                </a>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    // 關島旅遊小提醒
+    function GuamTips({ activeDayIdx }) {
+      return (
+        <div className="mt-8 bg-[#E6EFF5] rounded-2xl p-5 border border-[#CFDFEB] text-xs text-[#334E68] space-y-2.5">
+          <div className="flex items-center gap-1.5 font-bold text-[#243B53]">
+            <svg className="w-4 h-4 text-[#486581]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="16" x2="12" y2="12" />
+              <line x1="12" y1="8" x2="12.01" y2="8" />
+            </svg>
+            <span className="text-sm">關島自由行・員旅實用小提醒</span>
+          </div>
+          <ul className="list-disc pl-4 space-y-1.5 text-[#334E68] leading-relaxed">
+            <li><span className="font-semibold text-[#243B53]">免簽入境規範：</span>台灣旅客自台灣直飛關島享免簽（需持 6 個月以上效期護照正本，並備妥國民身分證正本）。</li>
+            <li><span className="font-semibold text-[#243B53]">時差與氣候：</span>關島時間比台灣快 2 小時（UTC+10）。常年氣溫約 27°C～32°C，室內冷氣偏強，建議備妥薄外套與高係數防曬。</li>
+            <li><span className="font-semibold text-[#243B53]">電壓與貨幣：</span>電壓 110/120V 美規插頭（與台灣相同無需轉接頭）。通用美金，各大商場與餐廳廣泛接受國際信用卡。</li>
+            {activeDayIdx === 0 && (
+              <li><span className="font-semibold text-[#243B53]">第一天小提醒：</span>抵達關島機場辦理出關與接駁，入住 THE TSUBAKI HOTEL 後可先散步享受無邊際海景。</li>
+            )}
+            {activeDayIdx === 4 && (
+              <li><span className="font-semibold text-[#243B53]">退房小提醒：</span>請於 11:00 前辦理退房，並於起飛前 2.5～3 小時抵達關島機場辦理安檢。</li>
+            )}
+          </ul>
+        </div>
+      );
+    }
+
+    // 主應用元件
+    function App() {
+      const [days, setDays] = useState(() => {
+        try {
+          const saved = localStorage.getItem(STORAGE_KEY);
+          if (saved) return JSON.parse(saved);
+        } catch (e) {}
+        return defaultDays;
+      });
+
+      const [activeDayIdx, setActiveDayIdx] = useState(0);
+
+      useEffect(() => {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(days));
+        } catch (e) {}
+      }, [days]);
+
+      const handleToggleDone = (itemId) => {
+        setDays((prev) =>
+          prev.map((day) => ({
+            ...day,
+            items: day.items.map((it) => (it.id === itemId ? { ...it, done: !it.done } : it)),
+          }))
+        );
+      };
+
+      const handleReset = () => {
+        if (window.confirm('確定要重設回預設關島行程嗎？')) {
+          setDays(defaultDays);
+          localStorage.removeItem(STORAGE_KEY);
+        }
+      };
+
+      const activeDay = days[activeDayIdx] || days[0];
+
+      return (
+        <div className="min-h-screen bg-[#EEF2F6] text-[#243B53] pb-20 font-sans w-full">
+          {/* 頂部標題 */}
+          <header className="pt-12 pb-8 px-6 text-center max-w-xl mx-auto">
+            <h1 className="text-3xl font-light tracking-[0.3em] uppercase text-[#334E68] leading-tight">
+              Guam<br />
+              <span className="text-xl tracking-[0.2em] font-normal">2027 Guam Company Trip</span>
+            </h1>
+            <div className="mt-4 h-[1.5px] w-14 bg-[#BCCEDC] mx-auto"></div>
+          </header>
+
+          {/* 內容容器 */}
+          <div className="max-w-xl mx-auto px-4 sm:px-6 space-y-6">
+            {/* 匯率換算器 */}
+            <section>
+              <CurrencyConverter initialRate={32.2} />
+            </section>
+
+            {/* 日期膠囊導航 */}
+            <DayNavigation
+              days={days}
+              activeDayIdx={activeDayIdx}
+              onSelectDay={(idx) => setActiveDayIdx(idx)}
+            />
+
+            {/* 行程卡片 */}
+            <main id="itineraryContainer" className="space-y-4">
+              <div className="space-y-4">
+                {activeDay.items.map((item) => (
+                  <ItineraryCard key={item.id} item={item} onToggleDone={handleToggleDone} />
+                ))}
+              </div>
+
+              {/* 關島實用提醒 */}
+              <GuamTips activeDayIdx={activeDayIdx} />
+            </main>
+
+            {/* 頁尾 */}
+            <footer className="mt-14 text-center text-xs text-[#829AB1] space-y-2 pb-6">
+              <p className="tracking-wide">2027 Guam Company Trip</p>
+              <p className="text-[11px] text-[#9FB3C8]">
+                Have an extraordinary & relaxing company trip in Guam!
+              </p>
+              <div className="pt-3">
+                <button
+                  type="button"
+                  onClick={handleReset}
+                  className="inline-flex items-center gap-1.5 text-[11px] text-[#9FB3C8] hover:text-[#486581] transition-colors cursor-pointer py-1 px-2.5 rounded-lg hover:bg-[#DFE7EE]"
+                >
+                  <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                    <path d="M3 3v5h5"/>
+                  </svg>
+                  <span>重設回預設行程</span>
+                </button>
+              </div>
+            </footer>
+          </div>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
